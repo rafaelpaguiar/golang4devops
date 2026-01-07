@@ -64,11 +64,23 @@ func doRequests(resquestURL string) (Response, error) {
 			return nil, fmt.Errorf("Invalid output (HTTP Status Code): %d\nBody: %s\n", response.StatusCode, body)
 		}
 
+		if !json.Valid(body) {
+			return nil,  RequestError{
+				HTTPCode: response.StatusCode,
+				Body: string(body),
+				Err: fmt.Sprintf("No valid JSON returned."),
+			}
+		}
+
 		var page Page
 
 		err = json.Unmarshal(body, &page)
 		if err != nil {
-			return nil, fmt.Errorf("Unmarshal error: %s\n", err)
+			return nil,  RequestError{
+				HTTPCode: response.StatusCode,
+				Body: string(body),
+				Err: fmt.Sprintf("Page unmarshal error: %s", err),
+			}
 		}
 
 		switch(page.Name){
@@ -78,7 +90,11 @@ func doRequests(resquestURL string) (Response, error) {
 			err = json.Unmarshal(body, &words)
 
 			if err != nil {
-				return nil, fmt.Errorf("Unmarshal error: %s\n", err)
+				return nil,  RequestError{
+					HTTPCode: response.StatusCode,
+					Body: string(body),
+					Err: fmt.Sprintf("Words unmarshal error: %s", err),
+				}
 			}
 
 			return words, nil
@@ -90,7 +106,11 @@ func doRequests(resquestURL string) (Response, error) {
 			err = json.Unmarshal(body, &occurrence)
 
 			if err != nil {
-				return nil, fmt.Errorf("Unmarshal error: %s\n", err)
+				return nil,  RequestError{
+					HTTPCode: response.StatusCode,
+					Body: string(body),
+					Err: fmt.Sprintf("Occurrence unmarshal error: %s", err),
+				}
 			}
 
 			return occurrence, nil
@@ -110,10 +130,13 @@ func main() {
 
 	res, err := doRequests(args[1])
 	if err != nil {
+		if requestErr, ok := err.(RequestError); ok {
+			fmt.Printf("Error: %s (HTTPCode: %d, Body: %s)\n", requestErr.Err, requestErr.HTTPCode, requestErr.Body)
+			os.Exit(1)
+		}
 		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
 	}
-
 	if res == nil {
 		fmt.Printf("No response.\n")
 		os.Exit(1)
