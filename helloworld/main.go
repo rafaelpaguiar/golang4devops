@@ -40,9 +40,65 @@ func (o Occurrence) GetResponse() string {
 	return fmt.Sprintf("%s", strings.Join(out, ", "))
 }
 
-func doRequests(resquestURL string) (Response, error) {
+func main() {
 
-	response, err := http.Get(resquestURL)
+	var (
+		requestURL string
+		password   string
+		parsedURL  *url.URL
+		err        error
+	)
+
+	flag.StringVar(&requestURL, "url", "", "url to access.")
+	flag.StringVar(&password, "password", "", "use a password to access our api.")
+
+	flag.Parse()
+
+	if parsedURL, err = url.ParseRequestURI(requestURL); err != nil {
+		fmt.Printf("Validation error: URL is not valid: %s\n", err)
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	client := http.Client{}
+
+	if password != "" {
+		token, err := doLoginRequests(client, parsedURL.Scheme+"://"+parsedURL.Host+"/login", password)
+		if err != nil {
+			if requestErr, ok := err.(RequestError); ok {
+				fmt.Printf("Error: %s (HTTPCode: %d, Body: %s)\n", requestErr.Err, requestErr.HTTPCode, requestErr.Body)
+				os.Exit(1)
+			}
+			fmt.Printf("Error: %s\n", err)
+			os.Exit(1)
+		}
+		client.Transport = MyJWTTransport{
+			transport: http.DefaultTransport,
+			token:     token,
+		}
+	}
+
+	res, err := doRequests(client, parsedURL.String())
+	if err != nil {
+		if requestErr, ok := err.(RequestError); ok {
+			fmt.Printf("Error: %s (HTTPCode: %d, Body: %s)\n", requestErr.Err, requestErr.HTTPCode, requestErr.Body)
+			os.Exit(1)
+		}
+		fmt.Printf("Error: %s\n", err)
+		os.Exit(1)
+	}
+	if res == nil {
+		fmt.Printf("No response.\n")
+		os.Exit(1)
+	}
+
+	fmt.Printf("Response: %s\n", res.GetResponse())
+
+}
+
+func doRequests(client http.Client, resquestURL string) (Response, error) {
+
+	response, err := client.Get(resquestURL)
 
 	if err != nil {
 		return nil, fmt.Errorf("http Get error: %s\n", err)
@@ -113,42 +169,4 @@ func doRequests(resquestURL string) (Response, error) {
 	}
 
 	return nil, nil
-}
-
-func main() {
-
-	var (
-		requestURL string
-		password   string
-		parsedURL  *url.URL
-		err        error
-	)
-
-	flag.StringVar(&requestURL, "url", "", "url to access.")
-	flag.StringVar(&password, "password", "", "use a password to access our api.")
-
-	flag.Parse()
-
-	if parsedURL, err = url.ParseRequestURI(requestURL); err != nil {
-		fmt.Printf("Validation error: URL is not valid: %s\n", err)
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	res, err := doRequests(parsedURL.String())
-	if err != nil {
-		if requestErr, ok := err.(RequestError); ok {
-			fmt.Printf("Error: %s (HTTPCode: %d, Body: %s)\n", requestErr.Err, requestErr.HTTPCode, requestErr.Body)
-			os.Exit(1)
-		}
-		fmt.Printf("Error: %s\n", err)
-		os.Exit(1)
-	}
-	if res == nil {
-		fmt.Printf("No response.\n")
-		os.Exit(1)
-	}
-
-	fmt.Printf("Response: %s\n", res.GetResponse())
-
 }
