@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
 	"testing"
 )
 
@@ -19,7 +18,7 @@ func (m MockClient) Get(url string) (resp *http.Response, err error) {
 
 func TestDoGetRequest(t *testing.T) {
 	words := WordsPage{
-		Page: Page{"Words"},
+		Page: Page{"words"},
 		Words: Words{
 			Input: "abc",
 			Words: []string{"a", "b"},
@@ -28,9 +27,10 @@ func TestDoGetRequest(t *testing.T) {
 
 	wordsBytes, err := json.Marshal(words)
 	if err != nil {
-		t.Error("marshal error: %s", err)
+		t.Errorf("marshal error: %s", err)
 	}
-	apiInstance := API{
+
+	apiInstance := api{
 		Options: Options{},
 		Client: MockClient{
 			ResponseOutput: &http.Response{
@@ -42,15 +42,15 @@ func TestDoGetRequest(t *testing.T) {
 
 	response, err := apiInstance.DoGetRequest("http://localhost/words")
 	if err != nil {
-		t.Error("DoGetRequesterror: %s", err)
+		t.Errorf("DoGetRequesterror: %s", err)
 	}
 
 	if response == nil {
 
-		t.Fatalf("Response is empty")
+		t.Errorf("Response is empty")
 	}
-	if response.GetResponse() != strings.Join([]string{"a", "b"}, ", ") {
-		t.Error("Unexected response: %s", response.GetResponse())
+	if response.GetResponse() != `Words: a, b` {
+		t.Errorf("Unexected response: %s", response.GetResponse())
 	}
 
 }

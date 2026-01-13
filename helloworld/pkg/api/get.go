@@ -26,7 +26,7 @@ type WordsPage struct {
 }
 
 func (w Words) GetResponse() string {
-	return fmt.Sprintf("%s", strings.Join(w.Words, ", "))
+	return fmt.Sprintf("Words: %s", strings.Join(w.Words, ", "))
 }
 
 type Occurrence struct {
@@ -41,7 +41,7 @@ func (o Occurrence) GetResponse() string {
 	return fmt.Sprintf("%s", strings.Join(out, ", "))
 }
 
-func (a API) DoGetRequest(resquestURL string) (Response, error) {
+func (a api) DoGetRequest(resquestURL string) (Response, error) {
 
 	response, err := a.Client.Get(resquestURL)
 
