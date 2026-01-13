@@ -3,16 +3,17 @@ package api
 import "net/http"
 
 type MyJWTTransport struct {
-	transport http.RoundTripper
-	token     string
-	password  string
-	loginURL  string
+	transport  http.RoundTripper
+	token      string
+	password   string
+	loginURL   string
+	HTTPClient ClientIface
 }
 
 func (m *MyJWTTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if m.token == "" {
 		if m.password != "" {
-			token, err := doLoginRequests(http.Client{}, m.loginURL, m.password)
+			token, err := doLoginRequests(m.HTTPClient, m.loginURL, m.password)
 			if err != nil {
 				return nil, err
 			}
