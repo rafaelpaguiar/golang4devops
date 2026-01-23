@@ -8,7 +8,7 @@ import (
 func main() {
 	fmt.Printf("one\n")
 
-  c := make(chan string)
+	c := make(chan string)
 
 	go testFunction(c)
 	fmt.Printf("two\n")
@@ -21,5 +21,5 @@ func testFunction(c chan string) {
 		fmt.Printf("checking...\n")
 		time.Sleep(1 * time.Second)
 	}
-  c <- "we are finished"
+	c <- "we are finished"
 }

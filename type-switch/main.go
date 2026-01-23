@@ -29,7 +29,7 @@ func discoverType(t any) {
 		if myType == nil {
 			fmt.Printf("Type is nil.\n")
 		} else {
-fmt.Printf("Type not found: %s\n", myType)
+			fmt.Printf("Type not found: %s\n", myType)
 		}
 
 	}

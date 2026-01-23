@@ -12,7 +12,7 @@ func main() {
 	var t2 float64 = 123.12
 	fmt.Printf("plusOne: %v (type %s))\n", plusOne(t2), reflect.TypeOf(plusOne(t2)))
 	fmt.Printf("sum: %v (type %s))\n", sum(t2, t2), reflect.TypeOf(sum(t2, t2)))
-  // doesn't work: fmt.Printf("sum: %v (type %s))\n", sum(t1, t2), reflect.TypeOf(sum(t1, t2)))
+	// doesn't work: fmt.Printf("sum: %v (type %s))\n", sum(t1, t2), reflect.TypeOf(sum(t1, t2)))
 
 }
 
